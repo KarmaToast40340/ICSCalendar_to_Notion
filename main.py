@@ -67,55 +67,55 @@ with open(csv_file, mode='r', newline='', encoding='utf-8') as file:
 
     # Parcourir chaque ligne (chaque événement)
     for row in reader:
-        # Vérifier si la description contient "CPTD2TP3"
-        description=row['DESCRIPTION']
-        if 'FISE1' in description or 'INFO1 TD2TP3' in description:
-            # Préparer les données pour chaque événement
-            data = {
-                "parent": {
-                    "database_id": DATABASE_ID
-                },
-                "properties": {
-                    "Nom": {  # Correspond à la colonne SUMMARY
-                        "title": [{
-                            "text": {
-                                "content": row['SUMMARY']  # Utiliser la colonne "SUMMARY"
-                            }
-                        }]
-                    },
-                    "Date": {  # Correspond aux colonnes DTSTART et DTEND
-                        "date": {
-                            "start": row['DTSTART'],  # Colonne "DTSTART" du CSV
-                            "end": row['DTEND']  # Colonne "DTEND" du CSV
+        # Créer le titre avec la localisation
+        summary_with_location = f"{row['SUMMARY']} - {row['LOCATION']}"
+
+        # Préparer les données pour chaque événement
+        data = {
+            "parent": {
+                "database_id": DATABASE_ID
+            },
+            "properties": {
+                "Nom": {  # Correspond à la colonne SUMMARY
+                    "title": [{
+                        "text": {
+                            "content": summary_with_location  # Utiliser le titre avec la localisation
                         }
-                    },
-                    "Location": {  # Correspond à la colonne LOCATION
-                        "rich_text": [{
-                            "text": {
-                                "content": row['LOCATION']  # Colonne "LOCATION"
-                            }
-                        }]
-                    },
-                    "Description": {  # Correspond à la colonne DESCRIPTION
-                        "rich_text": [{
-                            "text": {
-                                "content": row['DESCRIPTION']  # Colonne "DESCRIPTION"
-                            }
-                        }]
+                    }]
+                },
+                "Date": {  # Correspond aux colonnes DTSTART et DTEND
+                    "date": {
+                        "start": row['DTSTART'],  # Colonne "DTSTART" du CSV
+                        "end": row['DTEND']  # Colonne "DTEND" du CSV
                     }
+                },
+                "Location": {  # Correspond à la colonne LOCATION
+                    "rich_text": [{
+                        "text": {
+                            "content": row['LOCATION']  # Colonne "LOCATION"
+                        }
+                    }]
+                },
+                "Description": {  # Correspond à la colonne DESCRIPTION
+                    "rich_text": [{
+                        "text": {
+                            "content": row['DESCRIPTION']  # Colonne "DESCRIPTION"
+                        }
+                    }]
                 }
             }
+        }
 
-            # Envoyer la requête POST à Notion
-            response = requests.post('https://api.notion.com/v1/pages',
-                                     headers=headers,
-                                     json=data)
+        # Envoyer la requête POST à Notion
+        response = requests.post('https://api.notion.com/v1/pages',
+                                 headers=headers,
+                                 json=data)
 
-            # Vérifier la réponse de l'API
-            if response.status_code == 200:
-                print(f"Événement {row['SUMMARY']} ajouté à Notion avec succès.")
-            else:
-                print(f"Erreur pour {row['SUMMARY']}: {response.status_code}")
-                print("Détails:", response.json())
+        # Vérifier la réponse de l'API
+        if response.status_code == 200:
+            print(f"Événement {summary_with_location} ajouté à Notion avec succès.")
+        else:
+            print(f"Erreur pour {summary_with_location}: {response.status_code}")
+            print("Détails:", response.json())
 
-print("téléversement terminé")
+print("Téléversement terminé.")
