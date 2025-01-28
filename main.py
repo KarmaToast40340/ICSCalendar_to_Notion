@@ -1,26 +1,25 @@
 import requests
 import csv
 import icalendar
-import suppr
 import os
+import suppr
 from dotenv import load_dotenv
 
 load_dotenv()
 
 suppr.delete_all_events()
 
-# Détermine le répertoire où se trouve le script
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# URL du fichier ICS
+ics_url = "https://planning.univ-rennes1.fr/jsp/custom/modules/plannings/v3V5ldWb.shu"
 
-# Construire le chemin complet vers le fichier ICS
-ics_file_path = os.path.join(script_dir, "ADECal.ics")
+# Télécharger le fichier ICS depuis l'URL
+response = requests.get(ics_url)
+if response.status_code != 200:
+    raise Exception(f"Échec du téléchargement du fichier ICS depuis {ics_url}. Code: {response.status_code}")
 
-# Charger le fichier ICS
-if not os.path.exists(ics_file_path):
-    raise FileNotFoundError(f"Le fichier {ics_file_path} est introuvable.")
+# Charger le contenu ICS dans un objet Calendar
+calendar = icalendar.Calendar.from_ical(response.content)
 
-with open(ics_file_path, 'rb') as f:
-    calendar = icalendar.Calendar.from_ical(f.read())
 # Liste des événements
 events = []
 
@@ -45,7 +44,7 @@ with open('notion_calendar.csv', 'w', newline='', encoding='utf-8') as csvfile:
     for event in events:
         writer.writerow(event)
 
-print("Conversion ICS vers CSV terminée.")
+print("Fichier CSV généré avec succès.")
 
 # Notion API key et Database ID
 NOTION_API_KEY = os.getenv("NOTION_API_KEY")
@@ -118,4 +117,12 @@ with open(csv_file, mode='r', newline='', encoding='utf-8') as file:
             print(f"Erreur pour {summary_with_location}: {response.status_code}")
             print("Détails:", response.json())
 
+
+
 print("Téléversement terminé.")
+
+
+# Supprimer le fichier CSV après utilisation
+if os.path.exists(csv_file):
+    os.remove(csv_file)
+    print(f"Fichier {csv_file} supprimé avec succès.")

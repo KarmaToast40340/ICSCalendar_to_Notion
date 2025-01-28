@@ -1,43 +1,61 @@
 import requests
-import os
 
 # Notion API key et Database ID
 NOTION_API_KEY = "secret_DX8Fdsr7kExKOvOX3VXaBxmjClf4MvbVGXM42oZvTTj"
 DATABASE_ID = "43041498339045e6b9c4fdccb6574e5c"
 
-# Headers de l'API Notion
+# Headers pour l'API Notion
 headers = {
     "Authorization": f"Bearer {NOTION_API_KEY}",
     "Content-Type": "application/json",
     "Notion-Version": "2022-06-28"
 }
 
-# Récupérer toutes les pages de la base de données
-def get_all_pages():
+# Fonction pour récupérer tous les événements (pages) de la base de données
+def get_all_events():
     url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
-    response = requests.post(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()["results"]
-    else:
-        print(f"Erreur lors de la récupération des pages: {response.status_code}")
-        print(response.json())
-        return []
+    events = []
+    has_more = True
+    next_cursor = None
 
-# Supprimer une page
-def delete_page(page_id):
-    url = f"https://api.notion.com/v1/blocks/{page_id}"
-    response = requests.delete(url, headers=headers)
+    while has_more:
+        payload = {"page_size": 100}
+        if next_cursor:
+            payload["start_cursor"] = next_cursor
+
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code == 200:
+            data = response.json()
+            events.extend(data["results"])
+            has_more = data.get("has_more", False)
+            next_cursor = data.get("next_cursor")
+        else:
+            print(f"Erreur lors de la récupération des événements: {response.status_code}")
+            print(response.json())
+            return []
+
+    return events
+
+# Fonction pour supprimer (archiver) un événement
+def archive_event(event_id):
+    url = f"https://api.notion.com/v1/pages/{event_id}"
+    data = {"archived": True}
+    response = requests.patch(url, headers=headers, json=data)
     if response.status_code == 200:
-        print(f"Page {page_id} supprimée avec succès.")
+        print(f"Événement {event_id} archivé (supprimé) avec succès.")
     else:
-        print(f"Erreur lors de la suppression de la page {page_id}: {response.status_code}")
+        print(f"Erreur lors de la suppression de l'événement {event_id}: {response.status_code}")
         print(response.json())
 
-# Supprimer toutes les pages du calendrier
+# Fonction principale pour supprimer tous les événements de la base de données
 def delete_all_events():
-    pages = get_all_pages()
-    for page in pages:
-        delete_page(page["id"])
+    events = get_all_events()
+    if not events:
+        print("Aucun événement trouvé dans le calendrier.")
+        return
 
-# Exécuter la suppression de tous les événements
-delete_all_events()
+    print(f"{len(events)} événements trouvés. Suppression en cours...")
+    for event in events:
+        archive_event(event["id"])
+
+    print("Tous les événements ont été archivés avec succès.")
