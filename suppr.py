@@ -1,8 +1,9 @@
 import requests
+import os
 
 # Notion API key et Database ID
-NOTION_API_KEY = "secret_DX8Fdsr7kExKOvOX3VXaBxmjClf4MvbVGXM42oZvTTj"
-DATABASE_ID = "43041498339045e6b9c4fdccb6574e5c"
+NOTION_API_KEY = os.getenv("NOTION_API_KEY")
+DATABASE_ID = os.getenv("DATABASE_ID")
 
 # Headers pour l'API Notion
 headers = {
