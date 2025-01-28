@@ -3,9 +3,6 @@ import csv
 import icalendar
 import os
 import suppr
-from dotenv import load_dotenv
-
-load_dotenv()
 
 suppr.delete_all_events()
 
