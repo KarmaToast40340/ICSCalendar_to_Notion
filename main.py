@@ -9,7 +9,7 @@ import suppr
 suppr.delete_all_events()
 
 # URL du fichier ICS
-ics_url = "https://planning.univ-rennes1.fr/jsp/custom/modules/plannings/v3V5ldWb.shu"
+ics_url = "https://planning.univ-rennes1.fr/jsp/custom/modules/plannings/rY6vQxYz.shu"
 
 # Télécharger le fichier ICS depuis l'URL
 response = requests.get(ics_url)
