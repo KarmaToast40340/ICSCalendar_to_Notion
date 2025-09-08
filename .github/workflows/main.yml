@@ -1,9 +1,9 @@
 name: Run main.py Weekly
 
 on:
- # schedule:
+  schedule:
     # Planification : une fois par semaine, le dimanche à 00:00 UTC
-    #- cron: '0 0 * * 0'
+    - cron: '0 0 * * 0'
   workflow_dispatch: # Permet un lancement manuel si nécessaire
 
 jobs:
